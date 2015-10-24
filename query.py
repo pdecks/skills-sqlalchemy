@@ -31,7 +31,7 @@ Model.query.filter_by(name="Corvette", brand_name="Chevrolet").all()
 Model.query.filter(Model.year < 1960).all()
 
 # Get all brands that were founded after 1920.
-Brand.query.filter(Brand.year > 1920).all()
+Brand.query.filter(Brand.founded > 1920).all()
 
 # Get all models with names that begin with "Cor".
 Model.query.filter(Model.name.like('Cor%')).all()
@@ -39,23 +39,40 @@ Model.query.filter(Model.name.like('Cor%')).all()
 # Get all brands with that were founded in 1903 and that are not yet discontinued.
 Brand.query.filter(Brand.founded == 1903, Brand.discontinued == None).all()
 
-# Get all brands with that are either discontinued or founded before 1950.
+# Get all brands that are either discontinued or founded before 1950.
+Brand.query.filter((Brand.discontinued != None) | (Brand.founded < 1950)).all()
 
 # Get any model whose brand_name is not Chevrolet.
+Model.query.filter(Model.brand_name != "Chevrolet").all()
 
 # Fill in the following functions. (See directions for more info.)
+
 
 def get_model_info(year):
     '''Takes in a year, and prints out each model, brand_name, and brand
     headquarters for that year using only ONE database query.'''
 
-    pass
+    models = Model.query.filter(Model.year == year).all()
+    for model in models:
+        print "Model: %s" % model.name
+        print "Make: %s" % model.brand_name
+        print "Headquarters: %s" % model.headquarters
+        print "-"*30
+    return
+
 
 def get_brands_summary():
     '''Prints out each brand name, and each model name for that brand
-     using only ONE database query.'''
-
-    pass
+    using only ONE database query.'''
+    models_by_brand = Model.query.order_by(Model.brand_name).all()
+    brand = ''
+    for model in models_by_brand:
+        if model.brand_name != brand:
+            brand = model.brand_name
+            print '-'*30
+            print "%s" % brand.upper()
+        print "%s | %s" % (model.name, model.year)
+    return
 
 # -------------------------------------------------------------------
 
