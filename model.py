@@ -17,9 +17,10 @@ class Model(db.Model):
     __tablename__ = "models"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     year = db.Column(db.Integer, nullable=False)
-    brand_name = db.Column(db.String(50), nullable=True)
+    brand_name = db.Column(db.String(50), db.ForeignKey('brands.name'), nullable=True)
     name = db.Column(db.String(50), nullable=False)
     
+    brand = db.relationship('Brand', backref=db.backref('models', order_by=id))
 
 class Brand(db.Model):
 

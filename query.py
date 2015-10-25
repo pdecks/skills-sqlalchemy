@@ -50,22 +50,51 @@ Model.query.filter(Model.brand_name != "Chevrolet").all()
 
 def get_model_info(year):
     '''Takes in a year, and prints out each model, brand_name, and brand
-    headquarters for that year using only ONE database query.'''
+    headquarters for that year using only ONE database query.
 
-    models = Model.query.filter(Model.year == year).all()
-    for model in models:
-        print "Model: %s" % model.name
-        print "Make: %s" % model.brand_name
-        print "Headquarters: %s" % model.headquarters
+    >>> get_model_info(1953)
+    <BLANKLINE>
+    MODELS IN YEAR 1953
+    ------------------------------
+    Model: Corvette
+    Make: Chevrolet
+    Headquarters: Detroit, Michigan
+    ------------------------------
+    '''
+
+    # models_and_brands = db.session.query(Model, Brand).join(Brand).filter(Model.year == year).all()
+    
+    QUERY = """
+    SELECT Models.name, Models.brand_name, Brands.headquarters
+    FROM Models
+    JOIN Brands ON Models.brand_name = Brands.name
+    WHERE Models.year = :year;
+    """
+
+    cursor = db.session.execute(QUERY, {'year': year})
+    models_and_brands = cursor.fetchall()
+    
+    print "\nMODELS IN YEAR %s" % year
+    print "-"*30
+    for pair in models_and_brands:
+        model_name, model_make, brand_hq = pair
+        print "Model: %s" % model_name
+        print "Make: %s" % model_make
+        print "Headquarters: %s" % brand_hq
         print "-"*30
     return
 
 
 def get_brands_summary():
     '''Prints out each brand name, and each model name for that brand
-    using only ONE database query.'''
+    using only ONE database query.
+
+    '''
+
     models_by_brand = Model.query.order_by(Model.brand_name).all()
     brand = ''
+
+    print "\nBRANDS SUMMARY"
     for model in models_by_brand:
         if model.brand_name != brand:
             brand = model.brand_name
@@ -79,17 +108,45 @@ def get_brands_summary():
 
 # Part 2.5: Advanced and Optional
 def search_brands_by_name(mystr):
-    pass
+    """Takes in any string as parameter and returns a list of objects
+    that are brands whose name contains or is equal to the input string.
+
+    >>> my_list = search_brands_by_name('ord')
+    >>> my_list[0].name
+    u'Ford'
+
+    """
+    search_str = "%"+mystr+"%"
+    brands_list = Brand.query.filter(Brand.name.like(search_str)).all()
+    return brands_list
 
 
 def get_models_between(start_year, end_year):
-    pass
+    """Takes a start year and end year (two integers) and returns a list of objects
+    that are models with years that fall between those years.
+
+    >>> my_list = get_models_between(1963,1965)
+    >>> my_list[0].name
+    u'Corvette'
+
+    """
+    models_list = Model.query.filter((Model.year > start_year) & (Model.year < end_year)).all()
+    return models_list
+
 
 # -------------------------------------------------------------------
 
 # Part 3: Discussion Questions (Include your answers as comments.)
 
 # 1. What is the returned value and datatype of ``Brand.query.filter_by(name='Ford')``?
+# The returned datatype is an object, specifically a BaseQuery, because we did not 
+# fetch the records from the object by using .all(), .one(), etc. 
 
 # 2. In your own words, what is an association table, and what *type* of relationship
 # does an association table manage?
+# An association table describes a many-to-many relationship, storing information about how entries
+# from one table are related to entries in another table. For example, in our ratings exercise,
+# the ratings table desribes the relationship between users and movies. In our lecture notes, the
+# bookgenre table is association table that describes the many-to-many relationship between
+# books and genres. An association table may or may not have information independent of the tables
+# it connects.
