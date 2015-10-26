@@ -62,17 +62,17 @@ def get_model_info(year):
     ------------------------------
     '''
 
-    # models_and_brands = db.session.query(Model, Brand).join(Brand).filter(Model.year == year).all()
-    
-    QUERY = """
-    SELECT Models.name, Models.brand_name, Brands.headquarters
-    FROM Models
-    JOIN Brands ON Models.brand_name = Brands.name
-    WHERE Models.year = :year;
-    """
+    models_and_brands = db.session.query(Model.name, Model.brand_name, Brand.headquarters).join(Brand, Brand.name==Model.brand_name).filter(Model.year == year).all()
 
-    cursor = db.session.execute(QUERY, {'year': year})
-    models_and_brands = cursor.fetchall()
+    # QUERY = """
+    # SELECT Models.name, Models.brand_name, Brands.headquarters
+    # FROM Models
+    # JOIN Brands ON Models.brand_name = Brands.name
+    # WHERE Models.year = :year;
+    # """
+
+    # cursor = db.session.execute(QUERY, {'year': year})
+    # models_and_brands = cursor.fetchall()
     
     print "\nMODELS IN YEAR %s" % year
     print "-"*30
@@ -90,7 +90,8 @@ def get_brands_summary():
     using only ONE database query.
 
     '''
-
+    # models_by_brand = db.session.query(Model.brand_name, Model.name).group_by(Model.brand_name).all()
+    
     models_by_brand = Model.query.order_by(Model.brand_name).all()
     brand = ''
 
